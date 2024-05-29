@@ -48,7 +48,7 @@ class ExtractText:
         formatted_text = extracted_text
         print(formatted_text)
         if config("Formatting", "openai_analysis"):
-            if(openai.api_key == None or openai.api_key == ""):
+            if (openai.api_key is None or openai.api_key == ""):
                 prompt = ExtractText.formatted_prompt(formatted_text, language)
                 formatted_text = LlamaInterface.query(prompt)
             else:
@@ -62,10 +62,12 @@ class ExtractText:
     @staticmethod
     def formatted_prompt(extracted_text: str, language: str) -> str:
         return f"Analyse the following {language} code snippet:\n\n{extracted_text}\n\n" \
-        f"If no '{language}' code is present, say 'No Code' and disregard the remaining prompt otherwise if '{language}' code is detected," \
-        "If The Code is incomplete or has errors then prfix with 'Incomplete Code'" \
-        f"correct any basic syntax errors, indentation errors, but do not add any code that does not exist in the sample and make sure to preserve comments" \
-        f"Do NOT return any explanations, only code. Do NOT return leading or trailing backticks "
+               f"If no '{language}' code is present, say 'No Code' and disregard the remaining prompt otherwise if" \
+               f"'{language}' code is detected," \
+               "If The Code is incomplete or has errors then prefix with 'Incomplete Code'" \
+               "correct any basic syntax errors, indentation errors, but do not add any code that does not exist" \
+               "in the sample and make sure to preserve comments" \
+               f"Do NOT return any explanations, only code. Do NOT return leading or trailing backticks"
 
     @staticmethod
     def extract_frame_at_timestamp(filename: str, timestamp: float) -> Union[cv2.VideoCapture, None]:
