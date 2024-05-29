@@ -9,9 +9,7 @@ Note: These tests use the pytest-mock plugin to replace calls to external resour
 tests remain fast and do not modify external state.
 """
 import os
-import subprocess
-import inspect
-import pytest
+
 from app import utils
 
 
@@ -143,26 +141,7 @@ def test_file_already_exists_no_user_data(mocker):
     mocker.patch("app.utils.read_user_data", return_value=None)
     assert not utils.file_already_exists("4aj3sdl5a4k2sjd091u091j")
 
-# # First Try - No increase in code coverage
-# def write_to_file(snippet):
-#     return r"C:\\a\\b\\c"
 
-# def send_code_snippet_to_ide(snippet):
-#     file_path = write_to_file(snippet)
-#     subprocess.run(["code", file_path])
-
-# def test_snippet_opens_in_ide(mocker):
-#     current_module = inspect.getmodule(inspect.currentframe()).__name__
-#     mocker.patch(f"{current_module}.write_to_file", return_value=r"C:\\mock\\path\\filename.py")
-#     mocker.patch("subprocess.run")
-
-#     snippet = "print('Hello, World')"
-
-#     send_code_snippet_to_ide(snippet)
-#     subprocess.run.assert_called_once_with(["code", r"C:\\mock\\path\\filename.py"])
-
-
-# Second try
 def test_send_code_snippet_to_ide(mocker):
     mock_write_to_file = mocker.patch("app.utils.write_to_file", return_value="mock_file_path")
     mock_subprocess_run = mocker.patch("app.utils.subprocess.run")
