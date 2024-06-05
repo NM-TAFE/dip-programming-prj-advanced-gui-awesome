@@ -7,7 +7,11 @@ class LlamaInterface:
     headers = {"Content-Type": "application/json"}
     def query(question):
         data = {"prompt": question}
-        response = requests.post(LlamaInterface.url + 'llama', headers=LlamaInterface.headers, json=data)
+        try:
+            response = requests.post(LlamaInterface.url + 'llama', headers=LlamaInterface.headers, json=data)
+        except requests.exceptions.ConnectTimeout:
+            print("error has been caught")
+            return "Timeout Error Has Occurred"
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
