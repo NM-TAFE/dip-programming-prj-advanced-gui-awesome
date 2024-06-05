@@ -91,6 +91,8 @@
                     {% endfor %}
                 </div>
             </div>
+        <audio src="../static/audio/capture_success_tone.wav" id="capture_success"></audio>
+        <audio src="../static/audio/capture_fail_tone.wav" id="capture_fail"></audio>
             <script>
                 {# Work around for overflow issues with long non - breaking strings #}
                 let pc = document.getElementById("captureParentContainer");
@@ -114,6 +116,9 @@
                                 `<span class="timestamp"><button onclick="seekToTimestamp('${capture['timestamp'] }')">${capture['timestamp'] }</button></span></div>`;
                         });
                     $('#thumbnailContainer').html(captureHTML);
+
+                    var x = document.getElementById("capture_success");
+                    x.play();
                 })
               });
               function seekToTimestamp(timestamp) {
