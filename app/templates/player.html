@@ -4,7 +4,7 @@
 <section class="m-8 mb-0">
     <div class="flex gap-8">
         <div id="videoContainer" class="w-2/3">
-            <video id="videoPlayer" class="w-full rounded-t-xl">
+            <video id="videoPlayer" class="w-full rounded-t-xl" ontimeupdate="updateCodeDisplay(this.currentTime)">
                 <source src="{{ url_for('serve_video', filename=filename) }}" type="video/mp4">
             </video>
             <div class="text-lg flex items-center gap-4 px-4 py-2
@@ -39,8 +39,10 @@
                     </div>
                 </div>
                 <span class="text-base">Capture Controls</span>
-                <button onclick="captureCode()" class="fa-solid fa-expand hover:text-gray-400"
-                   aria-label="Capture Code"></button>
+                <button onclick="navigateTimestamps(-1)" class="fa-solid fa-angle-left hover:text-gray-400"
+                   aria-label="Previous Timestamp"></button>
+                <button onclick="navigateTimestamps(1)" class="fa-solid fa-angle-right hover:text-gray-400"
+                   aria-label="Next Timestamp"></button>
                 <button onclick="openInIde()" class="fa-solid fa-laptop-code hover:text-gray-400"
                    aria-label="Open in IDE"></button>
             </div>
@@ -63,12 +65,7 @@
                 <h2 class="text-2xl">Code Captures</h2>
                 <hr class="my-2">
                 <div class="flex gap-2">
-                    <button onclick="captureCode()" id="mainCaptureButton" class="w-1/2 p-1 bg-gradient-to-r from-indigo-400 to-purple-400
-                        text-white flex flex-col shadow-sm rounded-xl hover:underline text-sm">
-                        <span><i class="fa-solid fa-expand mr-2"></i>Capture Code on Frame</span>
-                        <span class="text-xs my-1 text-gray-200">({{ hotkeys["capture_code"] }})</span>
-                    </button>
-                    <button onclick="openInIde()" class="w-1/2 p-1 bg-gradient-to-r flex flex-col from-indigo-400 to-purple-400 text-white
+                    <button onclick="openInIde()" class="w-full p-1 bg-gradient-to-r flex flex-col from-indigo-400 to-purple-400 text-white
                         shadow-sm rounded-xl hover:underline text-sm">
                         <span><i class="fa-solid fa-laptop-code mr-2"></i>Open Latest Capture in IDE</span>
                         <span class="text-xs my-1 text-gray-200">({{ hotkeys["open_in_ide"] }})</span>
@@ -76,19 +73,17 @@
                 </div>
                 <hr class="my-2">
                 <div class="overflow-y-auto" id="captureOutputContainer">
-                    {% for capture in video_data["captures"] %}
                     <div class="border border-gray-200 mb-2 p-2 pt-0 shadow-sm rounded-xl bg-white">
                         <p class="text-gray-400 text-xs flex justify-between border-b border-gray-200 py-1">
-                            <span >Captured @ Timestamp: {{ capture["timestamp"] }}</span>
-                            <button onclick="openInIde('code_{{ loop.index0 }}')"
+                            <span id="codeTimestamp" >Captured @ Timestamp: </span>
+                            <button onclick="openInIde()"
                                class="underline text-purple-600 hover:cursor-pointer">Open in IDE</button>
                         </p>
-                        <pre class="overflow-x-auto"><code id="code_{{ loop.index0 }}"
+                        <pre class="overflow-x-auto"><code id="codeContent"
                              class="w-full whitespace-pre language-python text-xs"
                              contenteditable="true"
-                            >{{ capture["capture_content"] }}</code></pre>
+                            ></code></pre>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
             <script>
@@ -125,6 +120,37 @@
                     const seconds = parseInt(time[1]);
                     const totalSeconds = (minutes * 60) + seconds;
                   video.currentTime = totalSeconds;
+                  updateCodeDisplay(totalSeconds);
+              }
+
+              // Function to update code display based on current timestamp
+              function updateCodeDisplay(currentTime) {
+                  currentTime = Math.floor(currentTime);
+                  const captures = {{ video_data["captures"] | tojson }};
+                  const capture = captures.find(c => {
+                      const time = c.timestamp.split(':');
+                      const minutes = parseInt(time[0]);
+                      const seconds = parseInt(time[1]);
+                      return (minutes * 60) + seconds === currentTime;
+                  });
+                  if (capture) {
+                      document.getElementById('codeTimestamp').innerText = `Captured @ Timestamp: ${capture.timestamp}`;
+                      document.getElementById('codeContent').innerText = capture.capture_content;
+                  } else {
+                      document.getElementById('codeTimestamp').innerText = 'No code captured at this timestamp';
+                      document.getElementById('codeContent').innerText = '';
+                  }
+              }
+
+              // Function to navigate timestamps
+              function navigateTimestamps(direction) {
+                  const captures = {{ video_data["captures"] | tojson }};
+                  const currentTimestamp = document.getElementById('currentTimestamp').innerText;
+                  let index = captures.findIndex(c => c.timestamp === currentTimestamp);
+                  if (index !== -1) {
+                      index = Math.min(Math.max(index + direction, 0), captures.length - 1);
+                      seekToTimestamp(captures[index].timestamp);
+                  }
               }
         </script>
         </div>
