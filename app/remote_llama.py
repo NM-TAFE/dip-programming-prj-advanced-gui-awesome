@@ -4,7 +4,7 @@ import time
 
 
 class Llama:
-    url = "http://chaostree.xyz:3002/"
+    url = "http://chaostree.xyz:3002/"  # URL that points to llama instance running on local server
     headers = {"Content-Type": "application/json"}
 
     @staticmethod
@@ -14,10 +14,10 @@ class Llama:
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
-            #if the response message is "server starting"
+            # if the response message is "server starting"
             if response_data.get("message") == "server starting":
                 print("Server is starting, please hold...")
-                #wait 2 seconds then try again
+                # wait 2 seconds then try again
                 time.sleep(2)
                 return Llama.query(question)
             elif response.status_code == 500:
@@ -34,10 +34,10 @@ class Llama:
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
-            #if the response message is "server starting"
+            # if the response message is "server starting"
             if response_data.get("message") == "server starting":
                 print("Server is starting, please hold...")
-                #wait 2 seconds then try again
+                # wait 2 seconds then try again
                 time.sleep(2)
                 return Llama.query_with_default(content)
             elif response.status_code == 500:
@@ -59,7 +59,7 @@ class Llama:
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
-            #if the data was none or empty return the response
+            # if the data was none or empty return the response
             if not data:
                 return response_data.get("prompt")
             else:
