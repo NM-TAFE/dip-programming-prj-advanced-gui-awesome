@@ -4,6 +4,7 @@ from PIL import Image
 import pytesseract
 from remotellama import LlamaInterface
 from utils import config
+import time
 
 
 def run_ocr(ret, frame):
@@ -13,14 +14,12 @@ def run_ocr(ret, frame):
         return pytesseract.image_to_string(Image.open('temp.png'))
     else:
         return None
-
-
-def formatted_prompt(extracted_text: str, language: str) -> str:
-    return f"Analyse the following {language} code snippet:\n\n{extracted_text}\n\n" \
-        f"If no '{language}' code is present, say 'No Code' and disregard the remaining prompt. Otherwise if"\
-        f"'{language}' code is detected: If The Code is incomplete or has errors then prefix with 'Incomplete Code'" \
-        f"correct any indentation errors, but do not add any code that does not exist in the sample and make sure to" \
-        f"preserve comments" \
+  
+def formatted_prompt() -> str:
+        return f"Analyse the following %LANGUAGE% code snippet:\n\n%QUESTION%\n\n" \
+        f"If no '%LANGUAGE%' code is present, say 'No Code' and disregard the remaining prompt. Otherwise if '%LANGUAGE%' code is detected:" \
+        "If The Code is incomplete or has errors then prefix with 'Incomplete Code'" \
+        f"correct any indentation errors, but do not add any code that does not exist in the sample and make sure to preserve comments" \
         f"Do NOT embellish the code, simply return the code as a codeblock or 'No Code'"
 
 
@@ -35,7 +34,8 @@ def process_video(video_file_name, socketio):
     cap = cv2.VideoCapture(get_vid_save_path() + video_file_name)
     if not cap.isOpened():
         print("Error opening video file")
-
+    LlamaInterface.set_prompt(formatted_prompt())
+    language = config("UserSettings", "programming_language")
     # while the video is not finished
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video_fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -43,15 +43,17 @@ def process_video(video_file_name, socketio):
     steps_with_code = []
     video_length_seconds = video_length // video_fps
     was_last_step_code = False
+    start_time = time.time()
     update_user_video_data(video_file_name, None, None, False, True)
     while step_seconds < video_length_seconds:
-        print(f"{seconds_to_timestamp(step_seconds)}/{seconds_to_timestamp(video_length_seconds)}")
+        seconds_since_start = time.time() - start_time
+        print(f"{seconds_to_timestamp(step_seconds)}/{seconds_to_timestamp(video_length_seconds)}  Processing for: {seconds_to_timestamp(int(seconds_since_start))}")
         cap.set(cv2.CAP_PROP_POS_FRAMES, step_seconds * video_fps)
         text = run_ocr(*cap.read())
-        prompt = formatted_prompt(text, config("UserSettings", "programming_language"))
-        response = LlamaInterface.query(prompt)
+        response = LlamaInterface.query_with_default(text, language)
+        #print(response)
         if "```" in response:
-            response = response.split("```")[2]
+            response = response.split("```")[1]
         print(response)
 
         if "No Code" not in response and step_seconds not in steps_with_code:  # Did we find code?
