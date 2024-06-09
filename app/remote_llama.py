@@ -4,11 +4,9 @@ import time
 
 
 class Llama:
-    url = "http://chaostree.xyz:3002/"  ''' url of the API running ollama '''
+    url = "http://chaostree.xyz:3002/"  ''' url of the API running Llama '''
 
     ''' 
-    An Ollama instance is installed on a remote server. 
-    Via API, Ollama receives a prompt, runs LLM models, and send the response back.
     This project uses Llama 3 8B models. (80B models have been ruled out due to storage requirements).
     There is no specific fine-tuning of the models used for this project.
     '''
