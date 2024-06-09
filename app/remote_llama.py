@@ -4,14 +4,18 @@ import time
 
 
 class Llama:
-    url = "http://chaostree.xyz:3002/"  ''' url of the API running Llama '''
+    """
+    A utility class for analysing extracted text using Llama.
 
-    ''' 
-    This project uses Llama 3 8B models. (80B models have been ruled out due to storage requirements).
+    This class provides methods to send a prompt to Llama 3 8B models and get the response back.
+
+    Note:
     There is no specific fine-tuning of the models used for this project.
-    '''
+    80B models have been ruled out due to storage requirements.
+    """
 
     headers = {"Content-Type": "application/json"}
+    url = "http://chaostree.xyz:3002/"  # url of the API running Llama
 
     @staticmethod
     def query(question):
