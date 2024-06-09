@@ -11,7 +11,6 @@ import glob
 import threading
 import pre_process
 from flask_socketio import SocketIO
-from playsound import playsound
 
 
 # Initialise flask app
@@ -22,15 +21,6 @@ filename: Optional[str] = None
 cancel_search_flag: bool = False
 
 socketio = SocketIO(app)
-
-
-def play_sound(audio_file):
-    """
-    Plays a specific sound. Requires the 'playsound' package to be installed.
-    Args: audio_file (string): Path to the audio
-    """
-    if audio_file:
-        playsound(audio_file)
 
 
 @app.context_processor
@@ -170,7 +160,6 @@ def update_video_data():
         return "success"
     elif "capture" in data:
         utils.update_user_video_data(filename, capture=data["capture"])
-        play_sound("../static/audio/capture_success_tone.wav")
         return "success"
     else:
         logging.error("No compatible data type to update")
