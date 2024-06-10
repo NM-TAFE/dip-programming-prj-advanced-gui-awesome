@@ -11,20 +11,20 @@
                 rounded-b-xl shadow-sm bg-gradient-to-r from-indigo-400 to-purple-400 text-white">
                 <span class="text-base">Media Controls</span>
                 <div class="flex-col gap-2">
-                <button onclick="rewindVideo()" class="fa-solid fa-backward-step hover:text-gray-400"
-                   aria-label="Rewind Video" id="rewindButton"></button>
+                    <button onclick="rewindVideo()" class="fa-solid fa-backward-step hover:text-gray-400"
+                        aria-label="Rewind Video" id="rewindButton"></button>
                 </div>
                 <div class="flex-col gap-2">
-                <button id="playButton" onclick="playVideo()" class="fa-solid fa-play hover:text-gray-400"
-                   aria-label="Play Video"></button>
+                    <button id="playButton" onclick="playVideo()" class="fa-solid fa-play hover:text-gray-400"
+                        aria-label="Play Video"></button>
                 </div>
                 <div class="flex-col gap-2">
                     <button onclick="skipVideo()" class="fa-solid fa-forward-step hover:text-gray-400"
-                    aria-label="Skip Video"></button>
+                        aria-label="Skip Video"></button>
                 </div>
                 <label class="hidden" for="progressBar">Video Player Progress Bar</label>
                 <input id="progressBar" class="flex-grow" type="range" value="0"
-                       aria-label="Video Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    aria-label="Video Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                 <div>
                     <span id="currentTimestamp">0:00</span>
                     <span> / </span>
@@ -33,16 +33,16 @@
                 <div class="flex-col gap-2">
                     <div class="flex flex-grow items-center gap-2">
                         <button id="muteButton" onclick="muteVideo()"
-                        class="fa-solid fa-volume-high hover:text-gray-400" aria-label="Mute Video"></button>
+                            class="fa-solid fa-volume-high hover:text-gray-400" aria-label="Mute Video"></button>
                         <input id="volumeSlider" value="1" min="0" max="1" step="0.01" class="w-1/2" type="range"
-                        aria-label="Volume Control" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
+                            aria-label="Volume Control" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
                     </div>
                 </div>
                 <span class="text-base">Capture Controls</span>
                 <button onclick="captureCode()" class="fa-solid fa-expand hover:text-gray-400"
-                   aria-label="Capture Code"></button>
+                    aria-label="Capture Code"></button>
                 <button onclick="openInIde()" class="fa-solid fa-laptop-code hover:text-gray-400"
-                   aria-label="Open in IDE"></button>
+                    aria-label="Open in IDE"></button>
             </div>
             <div class="ml-2 mt-1">
                 <h2 class="text-2xl">{{ video_data["alias"] }}</h2>
@@ -52,7 +52,6 @@
             <div id="thumbnailContainer" class="flex flex-wrap gap-4 mt-4">
                 {% for capture in video_data["captures"] %}
                 <div class="thumbnail-wrapper">
-{#                    <img src="{{ url_for('thumbnail', filename=capture["thumbnail"]) }}" alt="Thumbnail" class="thumbnail">#}
                     <span class="timestamp"><button onclick="seekToTimestamp('{{capture['timestamp'] }}')">{{capture['timestamp']}}</button></span>
                 </div>
                 {% endfor %}
@@ -79,57 +78,102 @@
                     {% for capture in video_data["captures"] %}
                     <div class="border border-gray-200 mb-2 p-2 pt-0 shadow-sm rounded-xl bg-white">
                         <p class="text-gray-400 text-xs flex justify-between border-b border-gray-200 py-1">
-                            <span >Captured @ Timestamp: {{ capture["timestamp"] }}</span>
+                            <span>Captured @ Timestamp: {{ capture["timestamp"] }}</span>
                             <button onclick="openInIde('code_{{ loop.index0 }}')"
-                               class="underline text-purple-600 hover:cursor-pointer">Open in IDE</button>
+                                class="underline text-purple-600 hover:cursor-pointer">Open in IDE</button>
                         </p>
                         <pre class="overflow-x-auto"><code id="code_{{ loop.index0 }}"
-                             class="w-full whitespace-pre language-python text-xs"
-                             contenteditable="true"
-                            >{{ capture["capture_content"] }}</code></pre>
+                                class="w-full whitespace-pre language-python text-xs"
+                                contenteditable="true">{{ capture["capture_content"] }}</code></pre>
                     </div>
                     {% endfor %}
                 </div>
             </div>
-            <script>
-                {# Work around for overflow issues with long non - breaking strings #}
-                let pc = document.getElementById("captureParentContainer");
-                let oc = document.getElementById("captureOutputContainer");
-                let cc = document.getElementById("codeCapture");
-                pc.style.height = window.innerHeight - (pc.getBoundingClientRect().top * 2) + "px";
-                oc.style.height = window.innerHeight - (oc.getBoundingClientRect().top + pc.getBoundingClientRect().top) + "px";
-                cc.style.maxWidth = cc.offsetWidth + "px";
-            </script>
-            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
-            <script type="text/javascript" charset="utf-8">
-              $(document).ready(function() {
-                  const socket = io.connect('http://' + document.domain + ':' + location.port);
-
-                socket.on('update_timestamps', async function (data) {
-                    const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
-                    const captures = await response.json();
-                    console.log(captures);
-                    const captureHTML = captures.map(function(capture) {
-                            return '<div class="thumbnail-wrapper">' +
-                                `<span class="timestamp"><button onclick="seekToTimestamp('${capture['timestamp'] }')">${capture['timestamp'] }</button></span></div>`;
-                        });
-                    $('#thumbnailContainer').html(captureHTML);
-                })
-              });
-              function seekToTimestamp(timestamp) {
-                console.log(`seeking to` + timestamp);
-                    const video = document.getElementById('videoPlayer');
-                    //convert 00:00 to seconds
-                    const time = timestamp.split(':');
-                    const minutes = parseInt(time[0]);
-                    const seconds = parseInt(time[1]);
-                    const totalSeconds = (minutes * 60) + seconds;
-                  video.currentTime = totalSeconds;
-              }
-        </script>
         </div>
     </div>
 </section>
+<script>
+    {# Work around for overflow issues with long non - breaking strings #}
+    let pc = document.getElementById("captureParentContainer");
+    let oc = document.getElementById("captureOutputContainer");
+    let cc = document.getElementById("codeCapture");
+    pc.style.height = window.innerHeight - (pc.getBoundingClientRect().top * 2) + "px";
+    oc.style.height = window.innerHeight - (oc.getBoundingClientRect().top + pc.getBoundingClientRect().top) + "px";
+    cc.style.maxWidth = cc.offsetWidth + "px";
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function() {
+      const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+      socket.on('update_timestamps', async function (data) {
+          const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
+          const captures = await response.json();
+          console.log(captures);
+          displayThumbnails(captures);
+      });
+
+      displayThumbnails({{ video_data["captures"] | tojson }});
+
+      function displayThumbnails(captures) {
+          let filteredCaptures = [];
+          let currentGroup = [];
+
+          captures.forEach((capture, index) => {
+              const time = capture.timestamp.split(':');
+              const minutes = parseInt(time[0]);
+              const seconds = parseInt(time[1]);
+              const totalSeconds = (minutes * 60) + seconds;
+
+              if (currentGroup.length === 0) {
+                  // Start a new group with the first capture
+                  currentGroup.push({ capture, totalSeconds });
+              } else {
+                  const lastCaptureTime = currentGroup[currentGroup.length - 1].totalSeconds;
+                  if (totalSeconds - lastCaptureTime === 1) {
+                      currentGroup.push({ capture, totalSeconds });
+                  } else {
+                      processGroup(currentGroup, filteredCaptures);
+                      currentGroup = [{ capture, totalSeconds }];
+                  }
+              }
+
+              // Handle the last group after the loop
+              if (index === captures.length - 1) {
+                  processGroup(currentGroup, filteredCaptures);
+              }
+          });
+
+          const captureHTML = filteredCaptures.map(function (capture) {
+              return '<div class="thumbnail-wrapper">' +
+                  `<span class="timestamp"><button onclick="seekToTimestamp('${capture.timestamp}')">${capture.timestamp}</button></span></div>`;
+          }).join('');
+          $('#thumbnailContainer').html(captureHTML);
+      }
+
+      function processGroup(group, output) {
+          if (group.length >= 5) {
+              output.push(group[0].capture);
+          } else {
+              group.forEach(item => output.push(item.capture));
+          }
+      }
+  });
+
+  function seekToTimestamp(timestamp) {
+      console.log(`Seeking to ` + timestamp);
+      const video = document.getElementById('videoPlayer');
+      // Convert 00:00 to seconds
+      const time = timestamp.split(':');
+      const minutes = parseInt(time[0]);
+      const seconds = parseInt(time[1]);
+      const totalSeconds = (minutes * 60) + seconds;
+      console.log(`Total seconds: ` + totalSeconds);
+      video.currentTime = totalSeconds;
+      video.play();
+  }
+
+</script>
 <script>
     let nextCodeId = '{{ video_data["captures"]|length }}';
     let progress = '{{ video_data["progress"] }}';
