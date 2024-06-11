@@ -163,8 +163,8 @@ cython_debug/
 __pycache__
 config.ini
 app.log
-userdata.json
 videos
+userdata.json
 img
 out
 .vscode/settings.json
