@@ -4,7 +4,7 @@
 <section class="m-8 mb-0">
     <div class="flex gap-8">
         <div id="videoContainer" class="w-2/3">
-            <video id="videoPlayer" class="w-full rounded-t-xl" ontimeupdate="updateCodeDisplay(this.currentTime)">
+            <video id="videoPlayer" class="w-full rounded-t-xl" onpause="updateCodeDisplay(this.currentTime)">
                 <source src="{{ url_for('serve_video', filename=filename) }}" type="video/mp4">
             </video>
             <div class="text-lg flex items-center gap-4 px-4 py-2
