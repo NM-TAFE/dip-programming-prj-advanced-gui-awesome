@@ -130,7 +130,7 @@
                   currentGroup.push({ capture, totalSeconds });
               } else {
                   const lastCaptureTime = currentGroup[currentGroup.length - 1].totalSeconds;
-                  if (totalSeconds - lastCaptureTime === 1) {
+                  if (totalSeconds - lastCaptureTime <= 3) {
                       currentGroup.push({ capture, totalSeconds });
                   } else {
                       processGroup(currentGroup, filteredCaptures);
@@ -154,8 +154,6 @@
       function processGroup(group, output) {
           if (group.length >= 5) {
               output.push(group[0].capture);
-          } else {
-              group.forEach(item => output.push(item.capture));
           }
       }
   });
