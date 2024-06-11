@@ -128,7 +128,6 @@ function sendCaptureUpdate(timestamp, capture_content) {
  * Sends request to server to capture code at current video timestamp
  */
 function captureCode() {
-    document.getElementById('click_tone').play();
     let captureTimestamp = videoPlayer.currentTime;
     mainCaptureButton.innerHTML = "<span><i class=\"fa-solid fa-circle-notch fa-spin mr-2\"></i>Analysing Frame</span>" +
         "<span class=\"text-xs my-1 text-gray-200\">(" + hotkeys["capture_code"] + ")</span>";
@@ -137,20 +136,10 @@ function captureCode() {
         type: "POST",
         data: JSON.stringify({"timestamp": captureTimestamp}),
         contentType: "application/json",
-        success: function(response) {
-            if (response === "No Code")
-            {
-                document.getElementById('capture_fail').play();
-            }
-            else
-            {
+            success: function(response) {
                 displayCapture(response, captureTimestamp);
                 sendCaptureUpdate(captureTimestamp, response);
-                document.getElementById('capture_success').play();
             }
-            mainCaptureButton.innerHTML = "<span><i class=\"fa-solid fa-expand mr-2\"></i>Capture Code on Frame</span>" +
-                "<span class=\"text-xs my-1 text-gray-200\">(" + hotkeys["capture_code"] + ")</span>";
-        }
     });
 }
 
@@ -210,7 +199,6 @@ function formatTimestamp(seconds) {
  * if ID, is not specified
  */
 function openInIde(captureElementId) {
-    document.getElementById('click_tone').play();
     let codeElement;
     if (typeof captureElementId === "undefined") {
         // If no elementId provided
@@ -219,11 +207,15 @@ function openInIde(captureElementId) {
     } else {
         codeElement = document.getElementById(captureElementId);
     }
+
+    // Replace <br> tags with \n new line characters
+    let codeSnippet = codeElement.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+
     // Send request to backend
     $.ajax({
         url: "/send_to_ide",
         type: "POST",
-        data: JSON.stringify({"code_snippet": codeElement.innerHTML}),
+        data: JSON.stringify({"code_snippet": codeSnippet}),
         contentType: "application/json",
             success: function(response) {
                 console.log("success");
