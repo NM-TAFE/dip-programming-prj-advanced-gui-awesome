@@ -2,7 +2,10 @@
 
 ## Summary:
 
-My team met in class and discussed several ideas that we wanted to implement to improve OcrRoo.
+In the first week we as a team met in class and discussed on how we will go on with the project. We understood the 
+requirements of the project. We also installed the project on our local machines and ran it to understand about the 
+whole idea. Also, to understand the user requirements better we decided to chat with AI acting as the client for our 
+requirements.
 
 ### Evidence
 Mark all that applied this week
@@ -15,15 +18,14 @@ Mark all that applied this week
 
 ## Summary:
 
-My team met in class and created personas for our project.
+For the next week we decided to work on our user stories which was essential for us to slim down the requirements. 
+The user stories helped us in deciding our core tasks. 
 
-### Issues and PRs
-- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/2
 
 ### Evidence
 Mark all that applied this week
 - [x] Attended class
-- [x] Responded to PRs/Issues
+- [] Responded to PRs/Issues
 - [] Met with the team online.
 - [] Commits to group repo
 
@@ -31,41 +33,38 @@ Mark all that applied this week
 
 ## Summary:
 
-My team met in class and we all worked on our pre-process algorithm.
-Next week we planned on adding automatic timestamp updates on the frontend.
+Our team met in class and decided to start with our preprocessing video. While discussing about the preprocessing video 
+we also decided to display timestamps where code is detected. 
 
-### Issues and PRs
-- fixed bug on Mac where "\\" were being used in the app.
-- added pre-process function when playing the video.
-- added config to pre-process file.
 
 ### Evidence
 Mark all that applied this week
 - [x] Attended class
 - [] Responded to PRs/Issues
 - [] Met with the team online.
-- [x] Commits to group repo
+- [] Commits to group repo
 
 # Week 4:
 
 ## Summary:
 
-My team met in class and we all worked on the automatic timestamp updates and
-fixed some issues with our Llama prompt. Next week we plan on fixing the code
-output to only show the code currently on the screen.
+For this week I decided to work on grouping timestamps together. Till now all timestamps were getting displayed on the 
+screen but what we wanted was to group it in such a way that if the timestamps have a difference of 1(or is in range) 
+between them and if they last more than 5 seconds we group it together. Otherwise, we displayed it as it is. However, 
+
 
 ### Issues and PRs
-- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/4
-- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/6
-- added processing flag to video and added checks
-- fixed automatic timestamp update
-- added flask_socketio to requirements.txt
+- task: grouping timestamps in range longer than 5 seconds
+- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/issues/20
+- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/commit/bb8a0254bb3c4b0884594b443d2cd6eef4e074d8
+
+
 
 ### Evidence
 Mark all that applied this week
 - [x] Attended class
 - [x] Responded to PRs/Issues
-- [] Met with the team online.
+- [x] Met with the team online.
 - [x] Commits to group repo
 
 
@@ -73,17 +72,21 @@ Mark all that applied this week
 
 ## Summary:
 
-My team met in class and we all worked on fixing the code
-output to only show the code currently on the screen.
+In this week I uploaded the wireframes of our group to the repository and also updated my grouping timestamps function. 
+After checking my code with my team members we discussed that grouping timestamps with just one second differnce is not 
+a recommended option as well as displaying all timestamps is unnecessary. So we decided to enhance the grouping logic 
+in such a way that  if the difference in seconds is 3 or less and the code lasts longer than 5 seconds then display the 
+starting timestamps only. 
 
 ### Issues and PRs
-- fixed scaling issue on video player
-- fixed automatic timestamp update
-- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/23
+- enhanced grouping logic
+- updated wireframes
+- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/issues/20
+- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/commit/0c85749084629c7dc3154a3724403cab40830123
 
 ### Evidence
 Mark all that applied this week
 - [x] Attended class
 - [x] Responded to PRs/Issues
-- [x] Met with the team online.
+- [] Met with the team online.
 - [x] Commits to group repo
