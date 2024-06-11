@@ -11,16 +11,16 @@
                 rounded-b-xl shadow-sm bg-gradient-to-r from-indigo-400 to-purple-400 text-white">
                 <span class="text-base">Media Controls</span>
                 <div class="flex-col gap-2">
-                    <button onclick="rewindVideo()" class="fa-solid fa-backward-step hover:text-gray-400"
-                        aria-label="Rewind Video" id="rewindButton"></button>
+                <button onclick="rewindVideo()" class="fa-solid fa-backward-step hover:text-gray-400"
+                   aria-label="Rewind Video" title="Backwards 5 seconds" id="rewindButton"></button>
                 </div>
                 <div class="flex-col gap-2">
-                    <button id="playButton" onclick="playVideo()" class="fa-solid fa-play hover:text-gray-400"
-                        aria-label="Play Video"></button>
+                <button id="playButton" onclick="playVideo()" class="fa-solid fa-play hover:text-gray-400"
+                   aria-label="Play Video" title="Play"></button>
                 </div>
                 <div class="flex-col gap-2">
                     <button onclick="skipVideo()" class="fa-solid fa-forward-step hover:text-gray-400"
-                        aria-label="Skip Video"></button>
+                    aria-label="Skip Video" title="Forwards 5 seconds"></button>
                 </div>
                 <label class="hidden" for="progressBar">Video Player Progress Bar</label>
                 <input id="progressBar" class="flex-grow" type="range" value="0"
@@ -33,7 +33,7 @@
                 <div class="flex-col gap-2">
                     <div class="flex flex-grow items-center gap-2">
                         <button id="muteButton" onclick="muteVideo()"
-                            class="fa-solid fa-volume-high hover:text-gray-400" aria-label="Mute Video"></button>
+                        class="fa-solid fa-volume-high hover:text-gray-400" aria-label="Mute Video" title="Mute"></button>
                         <input id="volumeSlider" value="1" min="0" max="1" step="0.01" class="w-1/2" type="range"
                             aria-label="Volume Control" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1">
                     </div>
@@ -44,7 +44,7 @@
                 <button onclick="navigateTimestamps(1)" class="fa-solid fa-angle-right hover:text-gray-400"
                    aria-label="Next Timestamp"></button>
                 <button onclick="openInIde()" class="fa-solid fa-laptop-code hover:text-gray-400"
-                    aria-label="Open in IDE"></button>
+                    aria-label="Open in IDE" title="Open code in IDE"></button>
             </div>
             <div class="ml-2 mt-1">
                 <h2 class="text-2xl">{{ video_data["alias"] }}</h2>
