@@ -94,23 +94,47 @@
                 oc.style.height = window.innerHeight - (oc.getBoundingClientRect().top + pc.getBoundingClientRect().top) + "px";
                 cc.style.maxWidth = cc.offsetWidth + "px";
             </script>
-            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
-            <script type="text/javascript" charset="utf-8">
-              $(document).ready(function() {
-                  const socket = io.connect('http://' + document.domain + ':' + location.port);
+        </div>
+    </div>
+</section>
+<script>
+    {# Work around for overflow issues with long non - breaking strings #}
+    let pc = document.getElementById("captureParentContainer");
+    let oc = document.getElementById("captureOutputContainer");
+    let cc = document.getElementById("codeCapture");
+    pc.style.height = window.innerHeight - (pc.getBoundingClientRect().top * 2) + "px";
+    oc.style.height = window.innerHeight - (oc.getBoundingClientRect().top + pc.getBoundingClientRect().top) + "px";
+    cc.style.maxWidth = cc.offsetWidth + "px";
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+    let currentTimestampIndex = -1;
+  $(document).ready(function() {
+      const socket = io.connect('http://' + document.domain + ':' + location.port);
 
-                socket.on('update_timestamps', async function (data) {
-                    const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
-                    const captures = await response.json();
-                    console.log(captures);
-                    const captureHTML = captures.map(function(capture) {
-                            return '<div class="thumbnail-wrapper">' +
-                                `<span class="timestamp"><button onclick="seekToTimestamp('${capture['timestamp'] }')">${capture['timestamp'] }</button></span></div>`;
-                        });
-                    $('#thumbnailContainer').html(captureHTML);
-                })
-              });
-              function seekToTimestamp(timestamp) {
+      socket.on('update_timestamps', async function (data) {
+          const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
+          const captures = await response.json();
+          console.log(captures);
+          const filteredCaptures = calculateThumbnails(captures);
+          displayThumbnails(filteredCaptures);
+      });
+
+      const filteredCaptures = calculateThumbnails({{ video_data["captures"] | tojson }});
+      displayThumbnails(filteredCaptures);
+
+
+      function displayThumbnails(captures) {
+          const captureHTML = captures.map(function (capture) {
+              return '<div class="thumbnail-wrapper">' +
+                  `<span class="timestamp"><button onclick="seekToTimestamp('${capture.timestamp}')">${capture.timestamp}</button></span></div>`;
+          }).join('');
+      $('#thumbnailContainer').html(captureHTML);
+      }
+
+  });
+
+  function seekToTimestamp(timestamp) {
                 console.log(`seeking to` + timestamp);
                     const video = document.getElementById('videoPlayer');
                     //convert 00:00 to seconds
@@ -123,9 +147,11 @@
               }
 
               // Function to update code display based on current timestamp
-              function updateCodeDisplay(currentTime) {
+              async function updateCodeDisplay(currentTime) {
                   currentTime = Math.floor(currentTime);
-                  const captures = {{ video_data["captures"] | tojson }};
+                  const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/{{ video_data["filename"] }}`);
+                  const captures = await response.json();
+                  console.log(captures);
                   const capture = captures.find(c => {
                       const time = c.timestamp.split(':');
                       const minutes = parseInt(time[0]);
@@ -142,43 +168,20 @@
               }
 
               // Function to navigate timestamps
-              function navigateTimestamps(direction) {
-                  const captures = {{ video_data["captures"] | tojson }};
-                  const currentTimestamp = document.getElementById('currentTimestamp').innerText;
-                  let index = captures.findIndex(c => c.timestamp === currentTimestamp);
-                  if (index !== -1) {
-                      index = Math.min(Math.max(index + direction, 0), captures.length - 1);
-                      seekToTimestamp(captures[index].timestamp);
-                  }
+              async function navigateTimestamps(direction) {
+                  const newIndex = currentTimestampIndex + direction;
+                  if (newIndex < 0) return;
+
+                  const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/{{ video_data["filename"] }}`);
+                  let captures = await response.json();
+                  const filteredCaptures = calculateThumbnails(captures);
+                  console.log(newIndex, filteredCaptures.length);
+                  if (newIndex >= filteredCaptures.length) return;
+                  seekToTimestamp(filteredCaptures[newIndex].timestamp);
+                  currentTimestampIndex = newIndex;
               }
-        </script>
-        </div>
-    </div>
-</section>
-<script>
-    {# Work around for overflow issues with long non - breaking strings #}
-    let pc = document.getElementById("captureParentContainer");
-    let oc = document.getElementById("captureOutputContainer");
-    let cc = document.getElementById("codeCapture");
-    pc.style.height = window.innerHeight - (pc.getBoundingClientRect().top * 2) + "px";
-    oc.style.height = window.innerHeight - (oc.getBoundingClientRect().top + pc.getBoundingClientRect().top) + "px";
-    cc.style.maxWidth = cc.offsetWidth + "px";
-</script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
-<script type="text/javascript" charset="utf-8">
-  $(document).ready(function() {
-      const socket = io.connect('http://' + document.domain + ':' + location.port);
 
-      socket.on('update_timestamps', async function (data) {
-          const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
-          const captures = await response.json();
-          console.log(captures);
-          displayThumbnails(captures);
-      });
-
-      displayThumbnails({{ video_data["captures"] | tojson }});
-
-      function displayThumbnails(captures) {
+  function calculateThumbnails(captures) {
           let filteredCaptures = [];
           let currentGroup = [];
 
@@ -207,11 +210,7 @@
               }
           });
 
-          const captureHTML = filteredCaptures.map(function (capture) {
-              return '<div class="thumbnail-wrapper">' +
-                  `<span class="timestamp"><button onclick="seekToTimestamp('${capture.timestamp}')">${capture.timestamp}</button></span></div>`;
-          }).join('');
-          $('#thumbnailContainer').html(captureHTML);
+          return filteredCaptures;
       }
 
       function processGroup(group, output) {
@@ -219,20 +218,7 @@
               output.push(group[0].capture);
           }
       }
-  });
 
-  function seekToTimestamp(timestamp) {
-      console.log(`Seeking to ` + timestamp);
-      const video = document.getElementById('videoPlayer');
-      // Convert 00:00 to seconds
-      const time = timestamp.split(':');
-      const minutes = parseInt(time[0]);
-      const seconds = parseInt(time[1]);
-      const totalSeconds = (minutes * 60) + seconds;
-      console.log(`Total seconds: ` + totalSeconds);
-      video.currentTime = totalSeconds;
-      video.play();
-  }
 
 </script>
 <script>
