@@ -10,28 +10,32 @@ def parse_command(command: str) -> Union[str, dict]:
     """
     command_original = command
     command = command.lower()
-    # Clear command
-    if command == "cls" or command == "clear":
-        return "clear"
-    # Help menu command
-    if command == "help":
-        return utils.read_from_file("static\\resources\\help_menu.html")
-    # Capture frame command
-    if command == "capture":
-        return "capture"
-    # Open code in IDE command
-    if command == "open":
-        return "open"
-    # List videos command
-    if command == "list-videos":
-        return list_videos()
-    # Available videos for autocomplete
-    if command == "available-videos":
-        return available_videos()
-    # Invalid play-video command
-    if command == "play-video":
-        return "<span class=\"text-red-500\">Invalid usage of play-video. Video must be specified. " \
-               "Type help for more information</span>"
+
+    # Dictionary of valid commands with key:value pairs
+    valid_commands = {
+        # Clear command
+        'cls': 'clear',
+        'clear': 'clear',
+        # Help menu command
+        'help': utils.read_from_file("static\\resources\\help_menu.html"),
+        # Capture frame command
+        'capture': 'capture',
+        # Open code in IDE command
+        'open': 'open',
+        # List videos command
+        'list-videos': list_videos(),
+        # Available videos for autocomplete
+        'available-videos': available_videos(),
+        # Invalid play-video command
+        'play-video': "<span class=\"text-red-500\">Invalid usage of play-video. Video must be specified. "
+                "Type help for more information</span>"
+    }
+
+    result = valid_commands.get(command, None)
+
+    if result is not None:
+        return result
+
     # Multiple word/option commands
     return parse_split_command(command_original)
 
