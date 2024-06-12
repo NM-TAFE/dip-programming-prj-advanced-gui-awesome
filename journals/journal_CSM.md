@@ -87,3 +87,20 @@ Mark all that applied this week
 - [x] Responded to PRs/Issues
 - [x] Met with the team online.
 - [x] Commits to group repo
+
+# Week 6:
+
+## Summary:
+
+My team met in class, and we all worked on some grouping our timestamps and some fixes for navigating between the timestamps.
+
+### Issues and PRs
+- Update code output to only show the code currently on the video
+- Group timestamps together
+
+### Evidence
+Mark all that applied this week
+- [x] Attended class
+- [x] Responded to PRs/Issues
+- [x] Met with the team online.
+- [x] Commits to group repo
