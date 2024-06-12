@@ -14,13 +14,13 @@ class Llama:
     80B models have been ruled out due to storage requirements.
     """
 
-    headers = {"Content-Type": "application/json"}
     url = "http://chaostree.xyz:3002/"  # url of the API running Llama
 
     @staticmethod
     def query(question):
         data = {"prompt": question}
-        response = requests.post(Llama.url + 'llama', headers=Llama.headers, json=data)
+        response = requests.post(Llama.url + 'llama', json=data)
+        response.raise_for_status()
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
@@ -30,8 +30,6 @@ class Llama:
                 # wait 2 seconds then try again
                 time.sleep(2)
                 return Llama.query(question)
-            elif response.status_code == 500:
-                return response_data.get("error")
             else:
                 return response_data.get("message")
         else:
@@ -40,7 +38,8 @@ class Llama:
     @staticmethod
     def query_with_default(content, language):
         data = {"prompt": content, "language": language}
-        response = requests.post(Llama.url + 'llamapreprompt', headers=Llama.headers, json=data)
+        response = requests.post(Llama.url + 'llamapreprompt', json=data)
+        response.raise_for_status()
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
@@ -50,8 +49,6 @@ class Llama:
                 # wait 2 seconds then try again
                 time.sleep(2)
                 return Llama.query_with_default(content)
-            elif response.status_code == 500:
-                return response_data.get("error")
             else:
                 return response_data.get("message")
         else:
@@ -65,7 +62,7 @@ class Llama:
             if ("%QUESTION%" not in prompt):
                 raise ValueError("Prompt must contain %QUESTION%")
             data = {"newPrompt": prompt}
-        response = requests.post(Llama.url + 'llamasetprompt', headers=Llama.headers, json=data)
+        response = requests.post(Llama.url + 'llamasetprompt', json=data)
         response_data = response.json()
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
