@@ -298,6 +298,17 @@ def update_tesseract_path():
 
 @app.route('/update_ide_path', methods=['GET', 'POST'])
 def update_ide_path():
+    """
+    Handle updating of the PyCharm IDE executable path.
+
+    GET: Render the settings page with the current configuration.
+    POST:
+        - If 'cancel_search_ide' is in the form, set the cancel search flag and render the settings page.
+        - If PyCharm IDE executable path is not set, search for the executable in all drives.
+        - Update the configuration with the found path or notify the user if not found.
+
+    :return: Rendered HTML page with the current settings and optional message.
+    """
     global cancel_search_flag
 
     if request.method == 'POST' and request.form.get('cancel_search_ide'):
