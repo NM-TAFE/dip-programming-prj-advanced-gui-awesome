@@ -214,6 +214,8 @@
             document.getElementById("updateForm").submit();
         };
         document.getElementById('reset-settings').onclick = function () {
+            event.preventDefault();
+
             if (confirm("Are you sure you want to reset the settings? This cannot be undone.")) {
                 document.getElementById('resetSettings')
             }
