@@ -296,6 +296,41 @@ def update_tesseract_path():
     return render_template('settings.html', current_settings=current_settings, message=message)
 
 
+@app.route('/update_ide_path', methods=['GET', 'POST'])
+def update_ide_path():
+    global cancel_search_flag
+
+    if request.method == 'POST' and request.form.get('cancel_search_ide'):
+        # Set the flag to indicate cancellation
+        cancel_search_flag = True
+        message = 'IDE search canceled.'
+        current_settings = utils.get_current_settings()
+        return render_template('settings.html', current_settings=current_settings, message=message)
+
+    current_settings = utils.get_current_settings()
+    if current_settings['AppSettings']['ide_executable'] == 'your_path_to_ide_here' \
+            or current_settings['AppSettings']['ide_executable'] == '':
+        file_pattern = 'pycharm64.exe'
+        for drive in range(65, 91):  # Drive letters 'A' to 'Z'
+            drive_letter = chr(drive) + ':\\'
+            if os.path.exists(drive_letter):
+                for root, dirs, files in os.walk(drive_letter):
+                    if cancel_search_flag:  # Check the cancellation flag
+                        message = 'IDE search canceled.'
+                        cancel_search_flag = False  # Reset the flag
+                        return render_template('settings.html', current_settings=current_settings, message=message)
+
+                    for file in glob.glob(os.path.join(root, file_pattern)):
+                        file_path = file
+                        utils.update_configuration({'AppSettings': {'ide_executable': file_path}})
+                        message = 'PyCharm IDE executable found and path updated successfully.'
+                        current_settings = utils.get_current_settings()
+                        return render_template('settings.html', current_settings=current_settings, message=message)
+
+    message = 'Could not find PyCharm IDE executable. Please enter the path manually.'
+    return render_template('settings.html', current_settings=current_settings, message=message)
+
+
 if __name__ == "__main__":
     host = "localhost"
     port = 5000
