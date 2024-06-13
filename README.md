@@ -66,7 +66,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-5. ...rest of installation steps here
+5. Install Tesseract OCR
+- https://github.com/UB-Mannheim/tesseract/wiki
+- Once the .exe is downloaded open it and go through the installation steps.
+- When you run the program, there is an automated Tesseract executable search in the Settings.
+Feel free to do the search to save a lot of trouble.
 
 ## Contributing
 
