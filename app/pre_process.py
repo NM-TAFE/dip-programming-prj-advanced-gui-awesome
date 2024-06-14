@@ -2,7 +2,8 @@ from utils import get_vid_save_path, update_user_video_data, get_video_data
 import cv2
 from PIL import Image
 import pytesseract
-from remotellama import LlamaInterface
+import os
+from remote_llama import Llama
 from utils import config
 import time
 
@@ -34,7 +35,7 @@ def process_video(video_file_name, socketio):
     cap = cv2.VideoCapture(get_vid_save_path() + video_file_name)
     if not cap.isOpened():
         print("Error opening video file")
-    LlamaInterface.set_prompt(formatted_prompt())
+    Llama.set_prompt(formatted_prompt())
     language = config("UserSettings", "programming_language")
     # while the video is not finished
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -50,7 +51,7 @@ def process_video(video_file_name, socketio):
         print(f"{seconds_to_timestamp(step_seconds)}/{seconds_to_timestamp(video_length_seconds)}  Processing for: {seconds_to_timestamp(int(seconds_since_start))}")
         cap.set(cv2.CAP_PROP_POS_FRAMES, step_seconds * video_fps)
         text = run_ocr(*cap.read())
-        response = LlamaInterface.query_with_default(text, language)
+        response = Llama.query_with_default(text, language)
         #print(response)
         if "```" in response:
             response = response.split("```")[1]
