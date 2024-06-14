@@ -18,7 +18,7 @@ Change into the project directory.
 
 ```bash
 
-cd project-advanced-ui-developmennt-team-mental-capacity/
+cd dip-programming-prj-advanced-gui-awesome.git
 
 ```
 
