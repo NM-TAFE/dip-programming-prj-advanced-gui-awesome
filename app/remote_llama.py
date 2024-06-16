@@ -19,9 +19,14 @@ class Llama:
     @staticmethod
     def query(question):
         data = {"prompt": question}
-        response = requests.post(Llama.url + 'llama', json=data)
-        response.raise_for_status()
-        response_data = response.json()
+
+        try:
+            response = requests.post(Llama.url + 'llama', json=data)
+            response.raise_for_status()
+            response_data = response.json()
+        except requests.exceptions.RequestException as e:
+            return "error : " + str(e)
+
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
             # if the response message is "server starting"
@@ -38,9 +43,14 @@ class Llama:
     @staticmethod
     def query_with_default(content, language):
         data = {"prompt": content, "language": language}
-        response = requests.post(Llama.url + 'llamapreprompt', json=data)
-        response.raise_for_status()
-        response_data = response.json()
+
+        try:
+            response = requests.post(Llama.url + 'llama', json=data)
+            response.raise_for_status()
+            response_data = response.json()
+        except requests.exceptions.RequestException as e:
+            return "error : " + str(e)
+
         # Check if the response is a dictionary before trying to access it
         if isinstance(response_data, dict):
             # if the response message is "server starting"
