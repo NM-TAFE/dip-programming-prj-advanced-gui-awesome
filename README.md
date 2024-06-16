@@ -34,8 +34,8 @@ The program reads code from videos to assist visually impaired developers in usi
 
 ## Installation
 
-To install and run this project, please follow the [Installation Guide](https://github.com/NM-TAFE/dip-project-ocrroo/wiki/Installation-Guide)
-in the [Wiki](https://github.com/NM-TAFE/dip-project-ocrroo/wiki).
+To install and run this project, please follow the [Installation Guide](https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/wiki/Installation-Guide)
+in the [Wiki](https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/wiki).
 
 #### Basic Installation
 
@@ -66,11 +66,41 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-5. Install Tesseract OCR
-- https://github.com/UB-Mannheim/tesseract/wiki
-- Once the .exe is downloaded open it and go through the installation steps.
-- When you run the program, there is an automated Tesseract executable search in the Settings.
-Feel free to do the search to save a lot of trouble.
+5. Navigate to App Directory
+
+Change into app directory.
+
+```bash
+cd app/
+
+```
+
+6. Run the Application
+
+To run the application with silenced debug/logging output, execute the following command. Debug and logging outputs will be saved to an `app.log` file
+
+```bash
+python app.py
+
+```
+
+To run the application with debug/logging output in the console, use the following command.This is recommended for development as it automatically reloads the app when changes are detected.
+
+```bash
+flask run --debug
+
+```
+
+#### Configuration Variables
+
+To use the project, add the following configuration variables to your `config.ini` file:
+
+- `openai_api_key`: API key for OpenAI
+- `tesseract_executable`: Path to Tesseract OCR executable
+- `ide_executable`: Path to preferred IDE executable
+
+In the current version of the project, this manual configuration is necessary.However, future builds will allow you to perform this configuration from the user interface (UI). 
+
 
 ## Contributing
 
