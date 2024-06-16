@@ -84,6 +84,12 @@ python app.py
 
 ```
 
+7. Install Tesseract OCR
+- https://github.com/UB-Mannheim/tesseract/wiki
+- Once the .exe is downloaded open it and go through the installation steps.
+- When you run the program, there is an automated Tesseract executable search in the Settings.
+Feel free to do the search to save a lot of trouble.
+
 To run the application with debug/logging output in the console, use the following command.This is recommended for development as it automatically reloads the app when changes are detected.
 
 ```bash
