@@ -24,8 +24,8 @@ tesseract_executable = None
 def initialize_config():
     """
     Initializes the config file for the app.
-    :global: openai_api_key (str): The API key for accessing OpenAI services.
-    :global: tesseract_executable (str): The path to the Tesseract executable.
+    :global openai_api_key (str): The API key for accessing OpenAI services.
+    :global tesseract_executable (str): The path to the Tesseract executable.
     side effect: Modifies the global `openai_api_key` and `tesseract_executable` variables.
     side effect: Sets the `openai.api_key` for the OpenAI library.
     side effect: Sets the `pytesseract.pytesseract.tesseract_cmd` for the Tesseract library.
