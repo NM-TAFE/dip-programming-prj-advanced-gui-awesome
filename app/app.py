@@ -22,6 +22,7 @@ cancel_search_flag: bool = False
 
 socketio = SocketIO(app)
 
+
 @app.context_processor
 def utility_processor():
     """
