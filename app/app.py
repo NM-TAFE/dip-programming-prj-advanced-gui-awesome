@@ -1,4 +1,5 @@
 import os.path
+import platform
 import logging
 import shutil
 from typing import Optional
@@ -293,6 +294,64 @@ def update_tesseract_path():
                         return render_template('settings.html', current_settings=current_settings, message=message)
 
     message = 'Could not find tesseract executable. Please enter the path manually.'
+    return render_template('settings.html', current_settings=current_settings, message=message)
+
+
+@app.route('/update_ide_path', methods=['GET', 'POST'])
+def update_ide_path():
+    """
+    Handle updating of the PyCharm IDE executable path.
+
+    GET: Render the settings page with the current configuration.
+    POST:
+        - If 'cancel_search_ide' is in the form, set the cancel search flag and render the settings page.
+        - If PyCharm IDE executable path is not set, search for the executable in common directories.
+        - Update the configuration with the found path or notify the user if not found.
+
+    :return: Rendered HTML page with the current settings and optional message.
+    """
+    global cancel_search_flag
+
+    if request.method == 'POST' and request.form.get('cancel_search_ide'):
+        # Set the flag to indicate cancellation
+        cancel_search_flag = True
+        message = 'IDE search canceled.'
+        current_settings = utils.get_current_settings()
+        return render_template('settings.html', current_settings=current_settings, message=message)
+
+    current_settings = utils.get_current_settings()
+    ide_executable = current_settings['AppSettings'].get('ide_executable', '')
+
+    if ide_executable in ['your_path_to_ide_here', '']:
+        file_pattern = ''
+        common_dirs = []
+
+        if platform.system() == 'Windows':
+            file_pattern = 'pycharm64.exe'
+            common_dirs = [f'{chr(d)}:\\' for d in range(65, 91) if os.path.exists(f'{chr(d)}:\\')]
+        elif platform.system() == 'Darwin':  # macOS
+            file_pattern = 'pycharm'
+            common_dirs = ['/Applications', '~/Applications']
+        elif platform.system() == 'Linux':
+            file_pattern = 'pycharm'
+            common_dirs = ['/usr/local/bin', '/usr/bin', '~/bin']
+
+        for directory in common_dirs:
+            for root, dirs, files in os.walk(os.path.expanduser(directory)):
+                if cancel_search_flag:  # Check the cancellation flag
+                    message = 'IDE search canceled.'
+                    cancel_search_flag = False  # Reset the flag
+                    return render_template('settings.html', current_settings=current_settings, message=message)
+
+                for file in files:
+                    if file == file_pattern:
+                        file_path = os.path.join(root, file)
+                        utils.update_configuration({'AppSettings': {'ide_executable': file_path}})
+                        message = 'PyCharm IDE executable found and path updated successfully.'
+                        current_settings = utils.get_current_settings()
+                        return render_template('settings.html', current_settings=current_settings, message=message)
+
+    message = 'Could not find PyCharm IDE executable. Please enter the path manually.'
     return render_template('settings.html', current_settings=current_settings, message=message)
 
 

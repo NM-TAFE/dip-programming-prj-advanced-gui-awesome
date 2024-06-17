@@ -11,10 +11,23 @@
        <div class="flex flex-col">
             <h2 id="search-tesseract" class="text-2xl mb-8 text-red-500"></h2>
             <button id="cancel-search" class="hidden w-1/6 mb-3 bg-red-500 hover:bg-red-300 text-white hover:text-red-500 px-2 py-1 rounded-md">Cancel</button>
-        </div>        {% endif %}
+        </div>
+        {% endif %}
         {% if message %}
             <div id="finding-tesseract" class="hidden">{{ message }}</div>
         {% endif %}
+
+    {% if current_settings.AppSettings.ide_executable == 'your_path_to_ide_here'
+    or current_settings.AppSettings.ide_executable == '' %}
+    <div class="flex flex-col">
+        <h2 id="search-ide" class="text-2xl mb-8 text-red-500"></h2>
+        <button id="cancel-search-ide" class="hidden w-1/6 mb-3 bg-red-500 hover:bg-red-300 text-white hover:text-red-500 px-2 py-1 rounded-md">Cancel</button>
+    </div>
+    {% endif %}
+    {% if message %}
+    <div id="finding-message" class="hidden">{{ message }}</div>
+    {% endif %}
+
         <form method="POST" action="/update_settings" id="updateForm">
             <div class="mb-8">
                 <h2 class="text-2xl">User Account</h2>
