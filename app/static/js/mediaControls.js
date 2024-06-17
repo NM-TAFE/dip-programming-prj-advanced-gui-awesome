@@ -36,6 +36,15 @@ if (Number(progress) !== 0) {
     videoPlayer.currentTime = progress;
 }
 
+// Add hotkeys for navigating timestamps using arrow keys
+document.addEventListener("keydown", (event) => {
+    if (event.shiftKey && event.code === "ArrowLeft") {
+        navigateTimestamps(-1);
+    } else if (event.shiftKey && event.code === "ArrowRight") {
+        navigateTimestamps(1);
+    }
+});
+
 /**
  * Plays or pauses the video and updates play/pause button icon
  */
