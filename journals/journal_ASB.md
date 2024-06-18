@@ -78,7 +78,7 @@ Mark all that applied this week
 - fixed assigned issue for navigating through thumbnails
 - https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/27/commits/9decf920e2b7631a9a1d3f4f862c329d99187186
 - https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/27/commits/3f4b75b97244e582618cf9cf43610282c935ff82
-
+- https://github.com/NM-TAFE/dip-programming-prj-advanced-gui-awesome/pull/61
 
 ### Evidence
 Mark all that applied this week
