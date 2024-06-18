@@ -82,15 +82,15 @@ def read_user_data() -> json:
     Reads the users data from json file
     :return: Returns user data as json
     """
-    if not os.path.exists("data\\userdata.json"):
-        if not os.path.exists("data\\"):
-            os.makedirs("data\\")
-        with open("data\\userdata.json", "w") as user_data:
+    if not os.path.exists("data/userdata.json"):
+        if not os.path.exists("data/"):
+            os.makedirs("data/")
+        with open("data/userdata.json", "w") as user_data:
             user_data.write(json.dumps({"all_videos": []}))
             pass
         return None
     try:
-        with open("data\\userdata.json", "r") as user_data_json:
+        with open("data/userdata.json", "r") as user_data_json:
             data = json.load(user_data_json)
             return data
     except JSONDecodeError:
@@ -106,14 +106,14 @@ def get_vid_save_path() -> str:
     vid_download_path = config("UserSettings", "video_save_path")
     # Set default output path for video download path
     if vid_download_path == "output_path":
-        default_path = os.path.dirname(os.getcwd()) + "\\out\\videos\\"
+        default_path = os.path.dirname(os.getcwd()) + "/out/videos/"
         if not os.path.exists(default_path):
             os.makedirs(default_path)
         return default_path
     # Check if the path ends with a backslash
-    if not vid_download_path.endswith("\\"):
+    if not vid_download_path.endswith("/"):
         # If it doesn't end with a backslash, append one
-        vid_download_path += "\\"
+        vid_download_path += "/"
 
     return vid_download_path
 
@@ -126,14 +126,14 @@ def get_output_path() -> str:
     output_path = config("UserSettings", "capture_output_path")
     # Set default output path for code files
     if output_path == "output_path":
-        default_path = os.path.dirname(os.getcwd()) + "\\out\\"
+        default_path = os.path.dirname(os.getcwd()) + "/out/"
         if not os.path.exists(default_path):
             os.makedirs(default_path)
         return default_path
     # Check if the path ends with a backslash
-    if not output_path.endswith("\\"):
+    if not output_path.endswith("/"):
         # If it doesn't end with a backslash, append one
-        output_path += "\\"
+        output_path += "/"
     return output_path
 
 
@@ -151,7 +151,7 @@ def send_code_snippet_to_ide(filename: str, code_snippet: str) -> bool:
     if file_path is None:
         return False
     try:
-        subprocess.run([config("AppSettings", "ide_executable"), file_path], shell=True)
+        subprocess.run([config("AppSettings", "ide_executable"), file_path])
         logging.info("Successfully opened code snippet in IDE")
         return True
     except subprocess.SubprocessError as error:
@@ -250,12 +250,15 @@ def is_video_downloaded(filename: str) -> Optional[bool]:
     return True
 
 
-def update_user_video_data(filename: str, progress: Optional[float] = None, capture: Optional[dict] = None) -> None:
+def update_user_video_data(filename: str, progress: Optional[float] = None, capture: Optional[dict] = None,
+                           processed: Optional[bool] = None, processing: Optional[bool] = None) -> None:
     """
     Updates progress or capture content information in user data storage for specific video
     :param filename: Filename of video to update
     :param progress: New progress value to update
     :param capture: New capture to append
+    :param processed: pre-process completed
+    :param processing: whether pre-processing is currently running
     """
     user_data = read_user_data()
     if user_data is None:
@@ -264,8 +267,13 @@ def update_user_video_data(filename: str, progress: Optional[float] = None, capt
         if record["filename"] == filename:
             if progress is not None:
                 record["progress"] = round(progress)
+            if processed:
+                record["processed"] = processed
+            if processing is not None:
+                record["processing"] = processing
             if capture is not None:
                 record["captures"].append(capture)
+                record["captures"] = sorted(record["captures"], key=lambda x: x["timestamp"])
     with open("data/userdata.json", "w") as json_data:
         json.dump(user_data, json_data, indent=4)
 
@@ -305,6 +313,8 @@ def add_video_to_user_data(filename: str, video_title: str, video_hash: str, you
         "video_length": round(video_capture.get(cv2.CAP_PROP_FRAME_COUNT) / video_capture.get(cv2.CAP_PROP_FPS)),
         "progress": 0,
         "captures": [],
+        "processed": False,
+        "processing": False,
     }
     if youtube_url is not None:
         new_video["youtube_url"] = youtube_url

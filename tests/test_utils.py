@@ -118,13 +118,13 @@ def test_hash_string():
 
 def test_get_output_path(mocker):
     test_output_paths = {
-        "c:\\users\\program files\\app": "c:\\users\\program files\\app\\",
-        "output_path": os.path.dirname(os.getcwd()) + "\\out\\",
+        "c:\\users\\program files\\app\\": "c:\\users\\program files\\app\\",
+        "output_path": os.path.dirname(os.getcwd()) + "/out",
         "videos\\my_videos\\": "videos\\my_videos\\",
     }
     for paths in test_output_paths:
         mocker.patch("app.utils.config", return_value=paths)
-        assert utils.get_output_path() == test_output_paths[paths]
+        assert utils.get_output_path() == test_output_paths[paths] + '/'
 
 
 def test_file_already_exists_true(mocker):
@@ -140,3 +140,19 @@ def test_file_already_exists_false(mocker):
 def test_file_already_exists_no_user_data(mocker):
     mocker.patch("app.utils.read_user_data", return_value=None)
     assert not utils.file_already_exists("4aj3sdl5a4k2sjd091u091j")
+
+
+def test_send_code_snippet_to_ide(mocker):
+    mock_write_to_file = mocker.patch("app.utils.write_to_file", return_value="mock_file_path")
+    mock_subprocess_run = mocker.patch("app.utils.subprocess.run")
+    mocker.patch("app.utils.get_output_path", return_value="./out/")
+    mocker.patch("app.utils.get_file_extension_for_current_language", return_value=".py")
+    mocker.patch("app.utils.config", return_value="ide_executable_command")
+    
+    snippet = "print('Hello, World')"
+    
+    result = utils.send_code_snippet_to_ide("test.py", snippet)
+    
+    assert result == True
+    mock_write_to_file.assert_called_once_with(snippet, file_path="./out/test.py")
+    mock_subprocess_run.assert_called_once_with(["ide_executable_command", "mock_file_path"])

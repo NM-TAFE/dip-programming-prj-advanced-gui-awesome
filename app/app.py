@@ -1,13 +1,17 @@
-import os.path
+import os
 import logging
 import shutil
 from typing import Optional
 import utils
 import web_cli
 from extract_text import ExtractText
-from flask import Flask, render_template, request, send_file, redirect
+from flask import Flask, render_template, request, send_file, redirect, jsonify
 import html
 import glob
+import threading
+import pre_process
+from flask_socketio import SocketIO
+
 
 # Initialise flask app
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -15,6 +19,8 @@ app = Flask(__name__, static_url_path='/static', static_folder='static')
 filename: Optional[str] = None
 # Flag to check if the search process should be canceled
 cancel_search_flag: bool = False
+
+socketio = SocketIO(app)
 
 
 @app.context_processor
@@ -200,8 +206,26 @@ def video(play_filename):
     if utils.filename_exists_in_userdata(play_filename):
         global filename
         filename = play_filename
-        return render_template("player.html", filename=filename, video_data=utils.get_video_data(filename))
+        video_data = utils.get_video_data(filename)
+        if video_data['processed'] == False and video_data['processing'] == False:
+            print(filename)
+            threading.Thread(target=pre_process.process_video, args=(str(filename), socketio)).start()
+        return render_template("player.html", filename=filename, video_data=video_data)
     return redirect("/")
+
+
+@app.route("/get_video_data/<play_filename>", methods=['GET'])
+def video_data(play_filename):
+    """
+    Returns video player view/template with specified video
+    :param play_filename: Filename/video to play
+    :return: Rendered template of video player
+    """
+    if utils.filename_exists_in_userdata(play_filename):
+        global filename
+        filename = play_filename
+        video_data = utils.get_video_data(filename)
+        return jsonify(video_data['captures'])
 
 
 @app.route("/delete_video/<delete_filename>")
@@ -213,6 +237,8 @@ def delete_video(delete_filename):
     """
     if utils.filename_exists_in_userdata(delete_filename):
         utils.delete_video_from_userdata(delete_filename)
+    if os.path.isfile("../out/videos/" + delete_filename):
+        os.remove("../out/videos/" + delete_filename)
     return redirect("/")
 
 

@@ -5,6 +5,7 @@
  */
 
 // Parse DOM for needed elements
+let playingAudio = false;
 let videoPlayer = document.getElementById("videoPlayer");
 let progressBar = document.getElementById("progressBar");
 let currentTimestamp = document.getElementById("currentTimestamp");
@@ -23,6 +24,19 @@ progressBar.addEventListener("input", () => {
 videoPlayer.addEventListener("timeupdate", () => {
     progressBar.value = (videoPlayer.currentTime / videoPlayer.duration) * 100;
     currentTimestamp.innerHTML = formatTimestamp(videoPlayer.currentTime);
+    //get video time as mm:ss
+    let videoTime = formatTimestamp(videoPlayer.currentTime);
+    //check if video time is in capturedTimestamps
+
+    if (!playingAudio && capturedTimestamps.includes(videoTime)) {
+        playingAudio = true;
+        console.log("found");
+        var audio = new Audio(soundpath);
+        audio.play();
+        setTimeout(() => {
+            playingAudio = false;
+        }, 1000);
+    }
     sendProgressUpdate()
 });
 
@@ -35,6 +49,15 @@ volumeSlider.addEventListener("input", () => {
 if (Number(progress) !== 0) {
     videoPlayer.currentTime = progress;
 }
+
+// Add hotkeys for navigating timestamps using arrow keys
+document.addEventListener("keydown", (event) => {
+    if (event.shiftKey && event.code === "ArrowLeft") {
+        navigateTimestamps(-1);
+    } else if (event.shiftKey && event.code === "ArrowRight") {
+        navigateTimestamps(1);
+    }
+});
 
 /**
  * Plays or pauses the video and updates play/pause button icon
@@ -207,11 +230,15 @@ function openInIde(captureElementId) {
     } else {
         codeElement = document.getElementById(captureElementId);
     }
+
+    // Replace <br> tags with \n new line characters
+    let codeSnippet = codeElement.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+
     // Send request to backend
     $.ajax({
         url: "/send_to_ide",
         type: "POST",
-        data: JSON.stringify({"code_snippet": codeElement.innerHTML}),
+        data: JSON.stringify({"code_snippet": codeSnippet}),
         contentType: "application/json",
             success: function(response) {
                 console.log("success");
