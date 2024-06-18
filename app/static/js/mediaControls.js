@@ -5,6 +5,7 @@
  */
 
 // Parse DOM for needed elements
+let playingAudio = false;
 let videoPlayer = document.getElementById("videoPlayer");
 let progressBar = document.getElementById("progressBar");
 let currentTimestamp = document.getElementById("currentTimestamp");
@@ -23,6 +24,19 @@ progressBar.addEventListener("input", () => {
 videoPlayer.addEventListener("timeupdate", () => {
     progressBar.value = (videoPlayer.currentTime / videoPlayer.duration) * 100;
     currentTimestamp.innerHTML = formatTimestamp(videoPlayer.currentTime);
+    //get video time as mm:ss
+    let videoTime = formatTimestamp(videoPlayer.currentTime);
+    //check if video time is in capturedTimestamps
+
+    if (!playingAudio && capturedTimestamps.includes(videoTime)) {
+        playingAudio = true;
+        console.log("found");
+        var audio = new Audio(soundpath);
+        audio.play();
+        setTimeout(() => {
+            playingAudio = false;
+        }, 1000);
+    }
     sendProgressUpdate()
 });
 
