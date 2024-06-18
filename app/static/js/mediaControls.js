@@ -216,11 +216,15 @@ function openInIde(captureElementId) {
     } else {
         codeElement = document.getElementById(captureElementId);
     }
+
+    // Replace <br> tags with \n new line characters
+    let codeSnippet = codeElement.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+
     // Send request to backend
     $.ajax({
         url: "/send_to_ide",
         type: "POST",
-        data: JSON.stringify({"code_snippet": codeElement.innerHTML}),
+        data: JSON.stringify({"code_snippet": codeSnippet}),
         contentType: "application/json",
             success: function(response) {
                 console.log("success");
