@@ -108,116 +108,138 @@
 </script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 <script type="text/javascript" charset="utf-8">
+    let soundpath = "{{ url_for('static', filename='audio/alert.mp3') }}";
     let currentTimestampIndex = -1;
-  $(document).ready(function() {
-      const socket = io.connect('http://' + document.domain + ':' + location.port);
+    let capturedTimestamps = [];
+    $(document).ready(function() {
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
 
-      socket.on('update_timestamps', async function (data) {
-          const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
-          const captures = await response.json();
-          console.log(captures);
-          const filteredCaptures = calculateThumbnails(captures);
-          displayThumbnails(filteredCaptures);
-      });
+        socket.on('update_timestamps', async function (data) {
+            const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/${data}`);
+            const captures = await response.json();
+            console.log(captures);
+            const filteredCaptures = calculateThumbnails(captures);
+            displayThumbnails(filteredCaptures);
+        });
 
-      const filteredCaptures = calculateThumbnails({{ video_data["captures"] | tojson }});
-      displayThumbnails(filteredCaptures);
+        const filteredCaptures = calculateThumbnails({{ video_data["captures"] | tojson }});
+        displayThumbnails(filteredCaptures);
 
 
-      function displayThumbnails(captures) {
-          const captureHTML = captures.map(function (capture) {
-              return '<div class="thumbnail-wrapper">' +
-                  `<span class="timestamp"><button onclick="seekToTimestamp('${capture.timestamp}')">${capture.timestamp}</button></span></div>`;
-          }).join('');
-      $('#thumbnailContainer').html(captureHTML);
-      }
+        function displayThumbnails(captures) {  
+            capturedTimestamps = captures.map(c => c.timestamp);
+            const captureHTML = captures.map(function (capture) {
+                return '<div class="thumbnail-wrapper">' +
+                    `<span class="timestamp"><button onclick="seekToTimestamp('${capture.timestamp}')">${capture.timestamp}</button></span></div>`;
+            }).join('');
+        $('#thumbnailContainer').html(captureHTML);
+        }
+    });
 
-  });
+    function seekToTimestamp(timestamp) {
+        console.log(`seeking to` + timestamp);
+            const video = document.getElementById('videoPlayer');
+            //convert 00:00 to seconds
+            const time = timestamp.split(':');
+            const minutes = parseInt(time[0]);
+            const seconds = parseInt(time[1]);
+            const totalSeconds = (minutes * 60) + seconds;
+        video.currentTime = totalSeconds;
+        updateCodeDisplay(totalSeconds);
+    }
 
-  function seekToTimestamp(timestamp) {
-                console.log(`seeking to` + timestamp);
-                    const video = document.getElementById('videoPlayer');
-                    //convert 00:00 to seconds
-                    const time = timestamp.split(':');
-                    const minutes = parseInt(time[0]);
-                    const seconds = parseInt(time[1]);
-                    const totalSeconds = (minutes * 60) + seconds;
-                  video.currentTime = totalSeconds;
-                  updateCodeDisplay(totalSeconds);
-              }
+    // Function to update code display based on current timestamp
+    async function updateCodeDisplay(currentTime) {
+        currentTime = Math.floor(currentTime);
+        const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/{{ video_data["filename"] }}`);
+        const captures = await response.json();
+        console.log(captures);
+        const capture = captures.find(c => {
+            const time = c.timestamp.split(':');
+            const minutes = parseInt(time[0]);
+            const seconds = parseInt(time[1]);
+            return (minutes * 60) + seconds === currentTime;
+        });
+        if (capture) {
+            document.getElementById('codeTimestamp').innerText = `Captured @ Timestamp: ${capture.timestamp}`;
+            document.getElementById('codeContent').innerText = capture.capture_content;
+        } else {
+            document.getElementById('codeTimestamp').innerText = 'No code captured at this timestamp';
+            document.getElementById('codeContent').innerText = '';
+        }
+    }
 
-              // Function to update code display based on current timestamp
-              async function updateCodeDisplay(currentTime) {
-                  currentTime = Math.floor(currentTime);
-                  const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/{{ video_data["filename"] }}`);
-                  const captures = await response.json();
-                  console.log(captures);
-                  const capture = captures.find(c => {
-                      const time = c.timestamp.split(':');
-                      const minutes = parseInt(time[0]);
-                      const seconds = parseInt(time[1]);
-                      return (minutes * 60) + seconds === currentTime;
-                  });
-                  if (capture) {
-                      document.getElementById('codeTimestamp').innerText = `Captured @ Timestamp: ${capture.timestamp}`;
-                      document.getElementById('codeContent').innerText = capture.capture_content;
-                  } else {
-                      document.getElementById('codeTimestamp').innerText = 'No code captured at this timestamp';
-                      document.getElementById('codeContent').innerText = '';
-                  }
-              }
+    // Function to navigate timestamps
+    async function navigateTimestamps(direction) {
+        const newIndex = currentTimestampIndex + direction;
+        if (newIndex < 0) return;
 
-              // Function to navigate timestamps
-              async function navigateTimestamps(direction) {
-                  const newIndex = currentTimestampIndex + direction;
-                  if (newIndex < 0) return;
+        const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/{{ video_data["filename"] }}`);
+        let captures = await response.json();
+        const filteredCaptures = calculateThumbnails(captures);
+        console.log(newIndex, filteredCaptures.length);
+        if (newIndex >= filteredCaptures.length) return;
+        seekToTimestamp(filteredCaptures[newIndex].timestamp);
+        currentTimestampIndex = newIndex;
+    }
 
-                  const response = await fetch('http://' + document.domain + ':' + location.port + `/get_video_data/{{ video_data["filename"] }}`);
-                  let captures = await response.json();
-                  const filteredCaptures = calculateThumbnails(captures);
-                  console.log(newIndex, filteredCaptures.length);
-                  if (newIndex >= filteredCaptures.length) return;
-                  seekToTimestamp(filteredCaptures[newIndex].timestamp);
-                  currentTimestampIndex = newIndex;
-              }
+    function calculateThumbnails(captures) {
+        let filteredCaptures = [];
+        let currentGroup = [];
 
-  function calculateThumbnails(captures) {
-          let filteredCaptures = [];
-          let currentGroup = [];
+        captures.forEach((capture, index) => {
+            const time = capture.timestamp.split(':');
+            const minutes = parseInt(time[0]);
+            const seconds = parseInt(time[1]);
+            const totalSeconds = (minutes * 60) + seconds;
 
-          captures.forEach((capture, index) => {
-              const time = capture.timestamp.split(':');
-              const minutes = parseInt(time[0]);
-              const seconds = parseInt(time[1]);
-              const totalSeconds = (minutes * 60) + seconds;
+            if (currentGroup.length === 0) {
+                // Start a new group with the first capture
+                currentGroup.push({ capture, totalSeconds });
+            } else {
+                const lastCaptureTime = currentGroup[currentGroup.length - 1].totalSeconds;
+                if (totalSeconds - lastCaptureTime <= 3) {
+                    currentGroup.push({ capture, totalSeconds });
+                } else {
+                    processGroup(currentGroup, filteredCaptures);
+                    currentGroup = [{ capture, totalSeconds }];
+                }
+            }
 
-              if (currentGroup.length === 0) {
-                  // Start a new group with the first capture
-                  currentGroup.push({ capture, totalSeconds });
-              } else {
-                  const lastCaptureTime = currentGroup[currentGroup.length - 1].totalSeconds;
-                  if (totalSeconds - lastCaptureTime <= 3) {
-                      currentGroup.push({ capture, totalSeconds });
-                  } else {
-                      processGroup(currentGroup, filteredCaptures);
-                      currentGroup = [{ capture, totalSeconds }];
-                  }
-              }
+            // Handle the last group after the loop
+            if (index === captures.length - 1) {
+                processGroup(currentGroup, filteredCaptures);
+            }
+        });
 
-              // Handle the last group after the loop
-              if (index === captures.length - 1) {
-                  processGroup(currentGroup, filteredCaptures);
-              }
-          });
+        return filteredCaptures;
+    }
 
-          return filteredCaptures;
-      }
+    function processGroup(group, output) {
+        if (group.length >= 5) {
+            output.push(group[0].capture);
+        }
+    }
+    /**
+     * Sends progress update of video back to server
+     */
+    function sendProgressUpdate() {
+        
+        $.ajax({
+            url: "/update_video_data",
+            type: "POST",
+            data: JSON.stringify({"progress": videoPlayer.currentTime}),
+            contentType: "application/json",
+                success: function(response) {}
+        });
+    }
 
-      function processGroup(group, output) {
-          if (group.length >= 5) {
-              output.push(group[0].capture);
-          }
-      }
+    // Add event listener to video player to update progress bar, timestamp, and user data when time changes
+    videoPlayer.addEventListener("timeupdate", () => {
+        progressBar.value = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+        currentTimestamp.innerHTML = formatTimestamp(videoPlayer.currentTime);
+        sendProgressUpdate()
+    });
 
 
 </script>
