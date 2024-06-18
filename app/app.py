@@ -1,4 +1,4 @@
-import os.path
+import os
 import logging
 import shutil
 from typing import Optional
@@ -237,6 +237,8 @@ def delete_video(delete_filename):
     """
     if utils.filename_exists_in_userdata(delete_filename):
         utils.delete_video_from_userdata(delete_filename)
+    if os.path.isfile("../out/videos/" + delete_filename):
+        os.remove("../out/videos/" + delete_filename)
     return redirect("/")
 
 
