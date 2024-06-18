@@ -1,4 +1,4 @@
-from utils import config, get_vid_save_path, update_user_video_data, get_video_data
+from utils import get_vid_save_path, update_user_video_data, get_video_data
 import cv2
 from PIL import Image
 import pytesseract
@@ -7,20 +7,22 @@ from remote_llama import Llama
 from utils import config
 import time
 
+
 def run_ocr(ret, frame):
     temp_frame = frame
-    if ret == True:
+    if ret is True:
         cv2.imwrite('temp.png', temp_frame)
         return pytesseract.image_to_string(Image.open('temp.png'))
     else:
         return None
-    
+  
 def formatted_prompt() -> str:
         return f"Analyse the following %LANGUAGE% code snippet:\n\n%QUESTION%\n\n" \
         f"If no '%LANGUAGE%' code is present, say 'No Code' and disregard the remaining prompt. Otherwise if '%LANGUAGE%' code is detected:" \
         "If The Code is incomplete or has errors then prefix with 'Incomplete Code'" \
         f"correct any indentation errors, but do not add any code that does not exist in the sample and make sure to preserve comments" \
         f"Do NOT embellish the code, simply return the code as a codeblock or 'No Code'"
+
 
 def seconds_to_timestamp(seconds):
     minutes = seconds // 60
@@ -31,7 +33,7 @@ def seconds_to_timestamp(seconds):
 def process_video(video_file_name, socketio):
     print(f"Processing video {video_file_name}")
     cap = cv2.VideoCapture(get_vid_save_path() + video_file_name)
-    if not cap.isOpened(): 
+    if not cap.isOpened():
         print("Error opening video file")
     Llama.set_prompt(formatted_prompt())
     language = config("UserSettings", "programming_language")
@@ -51,21 +53,21 @@ def process_video(video_file_name, socketio):
         text = run_ocr(*cap.read())
         response = Llama.query_with_default(text, language)
         #print(response)
-        if("```" in response):
+        if "```" in response:
             response = response.split("```")[1]
         print(response)
 
-        if("No Code" not in response and step_seconds not in steps_with_code): #Did we find code?
+        if "No Code" not in response and step_seconds not in steps_with_code:  # Did we find code?
             dictEntry = {'timestamp': step_seconds, 'capture_content': response}
             update_user_video_data(video_file_name, None, dictEntry)
             steps_with_code.append(step_seconds)
             socketio.emit('update_timestamps', data=video_file_name)
-            if(was_last_step_code == False): #If we didn't find code last time, we want to skip back a bit
+            if not was_last_step_code:  # If we didn't find code last time, we want to skip back a bit
                 step_seconds -= 4
-            else: #If we did find code last time, we want to skip forward a bit
-                step_seconds += 1 
+            else:  # If we did find code last time, we want to skip forward a bit
+                step_seconds += 1
             was_last_step_code = True
-        else: #We didn't find code skip forward
+        else:  # We didn't find code skip forward
             step_seconds += 5
             was_last_step_code = False
     update_user_video_data(video_file_name, None, None, True, False)

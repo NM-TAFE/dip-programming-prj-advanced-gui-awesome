@@ -207,7 +207,7 @@ def video(play_filename):
         global filename
         filename = play_filename
         video_data = utils.get_video_data(filename)
-        if video_data['processed'] == False and video_data['processing'] == False:
+        if video_data['processed'] is False and video_data['processing'] is False:
             print(filename)
             threading.Thread(target=pre_process.process_video, args=(str(filename), socketio)).start()
         return render_template("player.html", filename=filename, video_data=video_data)
