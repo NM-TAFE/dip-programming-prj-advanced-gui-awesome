@@ -45,7 +45,7 @@ class Llama:
         data = {"prompt": content, "language": language}
 
         try:
-            response = requests.post(Llama.url + 'llama', json=data)
+            response = requests.post(Llama.url + 'llamapreprompt', json=data)
             response.raise_for_status()
             response_data = response.json()
         except requests.exceptions.RequestException as e:
