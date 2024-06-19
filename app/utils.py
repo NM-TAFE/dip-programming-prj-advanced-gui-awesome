@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import os.path
 import shutil
 import subprocess
@@ -15,6 +16,33 @@ from pytube.exceptions import RegexMatchError
 from configparser import ConfigParser
 
 
+# Define variables to store API key and Tesseract executable path
+openai_api_key = None
+tesseract_executable = None
+
+
+def initialize_config():
+    """
+    Initializes the config file for the app.
+    :global openai_api_key (str): The API key for accessing OpenAI services.
+    :global tesseract_executable (str): The path to the Tesseract executable.
+    side effect: Modifies the global `openai_api_key` and `tesseract_executable` variables.
+    side effect: Sets the `openai.api_key` for the OpenAI library.
+    side effect: Sets the `pytesseract.pytesseract.tesseract_cmd` for the Tesseract library.
+    """
+    global openai_api_key, tesseract_executable
+    parser = ConfigParser()
+    if not os.path.exists("config.ini"):
+        shutil.copy("config.example.ini", "config.ini")
+    parser.read("config.ini")
+    if openai_api_key is None and parser.get("AppSettings", "openai_api_key") != "your_openai_api_key_here":
+        openai_api_key = parser.get("AppSettings", "openai_api_key")
+        openai.api_key = openai_api_key
+    if tesseract_executable is None and parser.get("AppSettings", "tesseract_executable") != "your_path_to_tesseract_here":
+        tesseract_executable = parser.get("AppSettings", "tesseract_executable")
+        pytesseract.pytesseract.tesseract_cmd = tesseract_executable
+
+
 def config(section: str = None, option: str = None) -> Union[ConfigParser, str]:
     """
     Loads config variables from file and returns either specified variable or parser object. If attempting to
@@ -27,15 +55,7 @@ def config(section: str = None, option: str = None) -> Union[ConfigParser, str]:
     if (section is None) != (option is None):
         raise SyntaxError("section AND option parameters OR no parameters must be passed to function config()")
     parser = ConfigParser()
-    if not os.path.exists("config.ini"):
-        shutil.copy("config.example.ini", "config.ini")
     parser.read("config.ini")
-    if parser.get("AppSettings", "openai_api_key") != "your_openai_api_key_here":
-        openai.api_key = parser.get("AppSettings", "openai_api_key")
-        # TODO: This only needs to be set once, unsure if calling this will cause any performance issues same for
-        #  pytesseract cmd dir below.
-    if parser.get("AppSettings", "tesseract_executable") != "your_path_to_tesseract_here":
-        pytesseract.pytesseract.tesseract_cmd = fr'{parser.get("AppSettings", "tesseract_executable")}'
     if section is None and option is None:
         return parser
     else:

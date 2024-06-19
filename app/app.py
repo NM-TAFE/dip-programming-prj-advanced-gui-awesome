@@ -2,6 +2,7 @@ import os
 import logging
 import shutil
 from typing import Optional
+from werkzeug.utils import secure_filename
 import utils
 import web_cli
 from extract_text import ExtractText
@@ -12,6 +13,7 @@ import threading
 import pre_process
 from flask_socketio import SocketIO
 
+utils.initialize_config()
 
 # Initialise flask app
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -174,26 +176,38 @@ def upload_video():
     """
     youtube_url = request.form.get("youtubeInput")
     file = request.files["localFileInput"]
-    # TODO: Move this into separate function, too messy to have this logic in route method
+
     if file:
-        if not os.path.exists(f"{utils.get_vid_save_path()}"):
-            os.makedirs(f"{utils.get_vid_save_path()}")
-        file.save(f"{utils.get_vid_save_path()}" + file.filename)
-        global filename
-        filename = file.filename
-        file_hash = utils.hash_video_file(filename)
-        if utils.file_already_exists(file_hash):
-            return redirect(f"/play_video/{filename}")
-        video_title = request.form.get("videoTitle")
-        if video_title:
-            utils.add_video_to_user_data(filename, video_title, file_hash)
-        else:
-            utils.add_video_to_user_data(filename, filename, file_hash)
+        filename = process_uploaded_file(file)
         return redirect(f"/play_video/{filename}")
     elif youtube_url:
         return redirect(utils.download_youtube_video(youtube_url))
+
     logging.error("Failed to upload video file")
     return redirect("/upload")
+
+
+def process_uploaded_file(file):
+    """
+    Process uploaded file
+    :param file: Uploaded file
+    :return: Filename
+    """
+    if not os.path.exists(utils.get_vid_save_path()):
+        os.makedirs(utils.get_vid_save_path())
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(utils.get_vid_save_path(), filename)
+    file.save(file_path)
+
+    file_hash = utils.hash_video_file(filename)
+    if utils.file_already_exists(file_hash):
+        return filename
+
+    video_title = request.form.get("videoTitle", filename)
+    utils.add_video_to_user_data(filename, video_title, file_hash)
+
+    return filename
 
 
 @app.route("/play_video/<play_filename>")
